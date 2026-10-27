@@ -48,6 +48,28 @@ public class RegistrationTest {
         );
     }
 
+    @Test
+    public void shouldShowErrorForShortPassword() {
+        String email = "user" + UUID.randomUUID()
+                .toString().replace("-", "").substring(0, 10)
+                + "@example.com";
+
+        MainPage mainPage = new MainPage(driver);
+        mainPage.clickLoginButton();
+        mainPage.clickRegistrationLink();
+
+        RegistrationPage registrationPage = new RegistrationPage(driver);
+        registrationPage.enterName("Little Alien");
+        registrationPage.enterEmail(email);
+        registrationPage.enterPassword("12345");
+        registrationPage.clickRegisterButton();
+
+        assertTrue(
+                "Должна отображаться ошибка для пароля короче 6 символов",
+                registrationPage.getErrorMessage().length() > 0
+        );
+    }
+
     @After
     public void tearDown() {
         if (driver != null) {
