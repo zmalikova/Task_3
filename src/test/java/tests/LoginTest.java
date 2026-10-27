@@ -8,6 +8,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import pages.MainPage;
+import pages.RegistrationPage;
 
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +35,36 @@ public class LoginTest {
                 driver.getCurrentUrl().contains("/login")
         );
     }
+
+    @Test
+    public void shouldOpenLoginPageFromPersonalAccount() {
+        MainPage mainPage = new MainPage(driver);
+
+        mainPage.clickPersonalAccount();
+
+        assertTrue(
+                "Должна открыться страница входа",
+                driver.getCurrentUrl().contains("/login")
+        );
+    }
+
+
+    @Test
+    public void shouldOpenLoginPageFromRegistrationForm() {
+        MainPage mainPage = new MainPage(driver);
+        mainPage.clickLoginButton();
+        mainPage.clickRegistrationLink();
+
+        RegistrationPage registrationPage = new RegistrationPage(driver);
+        registrationPage.clickLoginLink();
+
+        assertTrue(
+                "После нажатия «Войти» должна открыться страница входа",
+                driver.getCurrentUrl().contains("/login")
+        );
+    }
+
+
 
     @After
     public void tearDown() {
