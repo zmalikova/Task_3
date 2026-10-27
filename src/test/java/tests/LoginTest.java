@@ -9,6 +9,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import pages.MainPage;
 import pages.RegistrationPage;
+import pages.LoginPage;
 
 import static org.junit.Assert.assertTrue;
 
@@ -64,7 +65,20 @@ public class LoginTest {
         );
     }
 
+    @Test
+    public void shouldReturnToLoginFromPasswordRecovery() {
+        MainPage mainPage = new MainPage(driver);
+        mainPage.clickLoginButton();
 
+        LoginPage loginPage = new LoginPage(driver);
+        loginPage.clickForgotPasswordLink();
+        loginPage.clickLoginLink();
+
+        assertTrue(
+                "После нажатия «Войти» должна открыться страница входа",
+                driver.getCurrentUrl().contains("/login")
+        );
+    }
 
     @After
     public void tearDown() {
