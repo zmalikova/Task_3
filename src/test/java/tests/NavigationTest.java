@@ -1,20 +1,21 @@
 package tests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import pages.MainPage;
 
-import static org.junit.Assert.assertTrue;
 
 public class NavigationTest {
 
     private WebDriver driver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -29,13 +30,13 @@ public class NavigationTest {
         mainPage.clickPersonalAccount();
 
         assertTrue(
-                "Должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "Должна открыться страница входа"
+                );
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (driver != null) {
             driver.quit();

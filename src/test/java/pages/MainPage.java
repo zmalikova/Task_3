@@ -24,49 +24,72 @@ public class MainPage {
             "//header//nav//a[p[contains(normalize-space(.), 'Личный Кабинет')]]"
     );
 
-    // Ссылка «Зарегистрироваться» на странице входа
-    private final By registrationLink = By.linkText("Зарегистрироваться");
+    // Ссылка «Зарегистрироваться»
+    private final By registrationLink =
+            By.linkText("Зарегистрироваться");
 
-    public MainPage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(
-                driver, Duration.ofSeconds(10)
-        );
-    }
+    // Оверлей модального окна
+    private final By modalOverlay =
+            By.cssSelector("[class*='Modal_modal_overlay']");
+
     // Логотип Stellar Burgers
     private final By logo = By.xpath(
             "//header//nav//div/a[contains(@href, '/')]/svg"
     );
 
     // Кнопка «Конструктор»
-    private final By constructorButton = By.xpath(
-            "//header//nav//ul/li[1]/a"
-    );
+    private final By constructorButton =
+            By.xpath("//header//nav//ul/li[1]/a");
+
+    public MainPage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WebDriverWait(
+                driver, Duration.ofSeconds(15)
+        );
+    }
+
+    // Ждём, пока модальное окно перестанет перекрывать страницу
+    private void waitForModalToDisappear() {
+        wait.until(
+                ExpectedConditions.invisibilityOfElementLocated(
+                        modalOverlay
+                )
+        );
+    }
+
+//    @Step("Нажать кнопку «Войти в аккаунт» на главной странице")
+//    public void clickLoginButton() {
+//        waitForModalToDisappear();
+//
+//        wait.until(
+//                ExpectedConditions.elementToBeClickable(loginButton)
+//        ).click();
+//    }
 
     @Step("Нажать кнопку «Войти в аккаунт» на главной странице")
     public void clickLoginButton() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(loginButton)
-        ).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(loginButton));
+
+        wait.until(ExpectedConditions.elementToBeClickable(loginButton))
+                .click();
     }
+
 
     @Step("Нажать кнопку «Личный Кабинет»")
     public void clickPersonalAccount() {
-        By modalOverlay = By.cssSelector(
-                "[class*='Modal_modal_overlay']"
-        );
+        waitForModalToDisappear();
 
         wait.until(
-                ExpectedConditions.invisibilityOfElementLocated(modalOverlay)
-        );
-
-        wait.until(
-                ExpectedConditions.elementToBeClickable(personalAccountButton)
+                ExpectedConditions.elementToBeClickable(
+                        personalAccountButton
+                )
         ).click();
     }
 
     @Step("Открыть форму регистрации")
     public void clickRegistrationLink() {
+        waitForModalToDisappear();
+
         wait.until(
                 ExpectedConditions.elementToBeClickable(registrationLink)
         ).click();
@@ -74,6 +97,8 @@ public class MainPage {
 
     @Step("Нажать на логотип Stellar Burgers")
     public void clickLogo() {
+        waitForModalToDisappear();
+
         wait.until(
                 ExpectedConditions.elementToBeClickable(logo)
         ).click();
@@ -81,8 +106,12 @@ public class MainPage {
 
     @Step("Нажать кнопку «Конструктор»")
     public void clickConstructorButton() {
+        waitForModalToDisappear();
+
         wait.until(
-                ExpectedConditions.elementToBeClickable(constructorButton)
+                ExpectedConditions.elementToBeClickable(
+                        constructorButton
+                )
         ).click();
     }
 }

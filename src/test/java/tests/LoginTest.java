@@ -1,19 +1,26 @@
 
 package tests;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.MainPage;
 import pages.RegistrationPage;
 import pages.LoginPage;
 import api.UserApi;
 import io.restassured.response.Response;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.PageLoadStrategy;
 
-import static org.junit.Assert.assertTrue;
+import java.time.Duration;
+
 
 public class LoginTest {
 
@@ -21,11 +28,22 @@ public class LoginTest {
     private String email;
     private String password;
 
-    @Before
+//    @BeforeEach
+//    public void setUp() {
+//        WebDriverManager.chromedriver().setup();
+//        driver = new ChromeDriver();
+//        driver.manage().window().maximize();
+//        driver.get("https://qa-stellarburgers.education-services.ru/");
+//    }
+
+    @BeforeEach
     public void setUp() {
         WebDriverManager.chromedriver().setup();
+
         driver = new ChromeDriver();
         driver.manage().window().maximize();
+        driver.manage().timeouts()
+                .pageLoadTimeout(Duration.ofSeconds(30));
         driver.get("https://qa-stellarburgers.education-services.ru/");
     }
 
@@ -36,9 +54,9 @@ public class LoginTest {
         mainPage.clickLoginButton();
 
         assertTrue(
-                "После нажатия должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "После нажатия должна открыться страница входа"
+                );
     }
 
     @Test
@@ -48,9 +66,9 @@ public class LoginTest {
         mainPage.clickPersonalAccount();
 
         assertTrue(
-                "Должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "Должна открыться страница входа"
+                );
     }
 
 
@@ -64,23 +82,55 @@ public class LoginTest {
         registrationPage.clickLoginLink();
 
         assertTrue(
-                "После нажатия «Войти» должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "После нажатия «Войти» должна открыться страница входа"
+                );
     }
+
+//    @Test
+//    public void shouldReturnToLoginFromPasswordRecovery() {
+//        MainPage mainPage = new MainPage(driver);
+//        mainPage.clickLoginButton();
+//
+//        LoginPage loginPage = new LoginPage(driver);
+//        loginPage.clickForgotPasswordLink();
+//        loginPage.clickLoginLink();
+//
+//        assertTrue(
+//                driver.getCurrentUrl().contains("/login"),
+//                "После нажатия «Войти» должна открыться страница входа"
+//                );
+//    }
 
     @Test
     public void shouldReturnToLoginFromPasswordRecovery() {
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
 
+        WebDriverWait wait = new WebDriverWait(
+                driver, Duration.ofSeconds(15)
+        );
+
+        wait.until(
+                ExpectedConditions.urlContains("/login")
+        );
+
         LoginPage loginPage = new LoginPage(driver);
         loginPage.clickForgotPasswordLink();
+
+        wait.until(
+                ExpectedConditions.urlContains("/forgot-password")
+        );
+
         loginPage.clickLoginLink();
 
+        wait.until(
+                ExpectedConditions.urlContains("/login")
+        );
+
         assertTrue(
-                "После нажатия «Войти» должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
+                driver.getCurrentUrl().contains("/login"),
+                "После нажатия «Войти» должна открыться страница входа"
         );
     }
 
@@ -132,13 +182,13 @@ public class LoginTest {
         );
 
         assertTrue(
-                "После выхода должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "После выхода должна открыться страница входа"
+                );
     }
 
 
-    @After
+    @AfterEach
     public void tearDown() {
         try {
             if (email != null && password != null) {

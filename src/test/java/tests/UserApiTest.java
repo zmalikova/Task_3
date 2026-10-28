@@ -3,13 +3,13 @@ package tests;
 
 import api.UserApi;
 import io.restassured.response.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserApiTest {
 
@@ -28,15 +28,15 @@ public class UserApiTest {
         );
 
         assertEquals(
-                "Пользователь должен создаться",
                 200,
-                createResponse.statusCode()
+                createResponse.statusCode(),
+                "Пользователь должен создаться"
         );
 
         assertTrue(
-                "В ответе должен быть accessToken",
                 createResponse.jsonPath()
-                        .getString("accessToken") != null
+                        .getString("accessToken") != null,
+                "В ответе должен быть accessToken"
         );
 
         String accessToken = createResponse.jsonPath()
@@ -47,9 +47,9 @@ public class UserApiTest {
         Response deleteResponse = userApi.deleteUser(accessToken);
 
         assertEquals(
-                "Пользователь должен удалиться",
                 202,
-                deleteResponse.statusCode()
+                deleteResponse.statusCode(),
+                "Пользователь должен удалиться"
         );
     }
 }

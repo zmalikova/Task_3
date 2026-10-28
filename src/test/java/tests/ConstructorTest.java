@@ -2,21 +2,22 @@
 package tests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import pages.ConstructorPage;
 
-import static org.junit.Assert.assertTrue;
 
 public class ConstructorTest {
 
     private WebDriver driver;
     private ConstructorPage constructorPage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -33,9 +34,9 @@ public class ConstructorTest {
         constructorPage.clickBunsTab();
 
         assertTrue(
-                "Должен быть выбран раздел «Булки»",
-                constructorPage.getActiveTabText().contains("Булки")
-        );
+                constructorPage.getActiveTabText().contains("Булки"),
+                "Должен быть выбран раздел «Булки»"
+                );
     }
 
     @Test
@@ -43,9 +44,9 @@ public class ConstructorTest {
         constructorPage.clickSaucesTab();
 
         assertTrue(
-                "Должен быть выбран раздел «Соусы»",
-                constructorPage.getActiveTabText().contains("Соусы")
-        );
+                constructorPage.getActiveTabText().contains("Соусы"),
+                "Должен быть выбран раздел «Соусы»"
+                );
     }
 
     @Test
@@ -53,12 +54,12 @@ public class ConstructorTest {
         constructorPage.clickFillingsTab();
 
         assertTrue(
-                "Должен быть выбран раздел «Начинки»",
-                constructorPage.getActiveTabText().contains("Начинки")
-        );
+                constructorPage.getActiveTabText().contains("Начинки"),
+                "Должен быть выбран раздел «Начинки»"
+                );
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (driver != null) {
             driver.quit();

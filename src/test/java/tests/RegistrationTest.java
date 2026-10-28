@@ -1,24 +1,26 @@
 
 package tests;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import pages.MainPage;
 import pages.RegistrationPage;
 
+
 import java.util.UUID;
 
-import static org.junit.Assert.assertTrue;
 
 public class RegistrationTest {
 
     private WebDriver driver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -44,9 +46,9 @@ public class RegistrationTest {
         registrationPage.clickRegisterButton();
 
         assertTrue(
-                "После успешной регистрации должна открыться страница входа",
-                driver.getCurrentUrl().contains("/login")
-        );
+                driver.getCurrentUrl().contains("/login"),
+                "После успешной регистрации должна открыться страница входа"
+                );
     }
 
     @Test
@@ -66,12 +68,12 @@ public class RegistrationTest {
         registrationPage.clickRegisterButton();
 
         assertTrue(
-                "Должна отображаться ошибка для пароля короче 6 символов",
-                registrationPage.getErrorMessage().length() > 0
-        );
+                registrationPage.getErrorMessage().length() > 0,
+                "Должна отображаться ошибка для пароля короче 6 символов"
+                );
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (driver != null) {
             driver.quit();
