@@ -33,6 +33,15 @@ public class MainPage {
                 driver, Duration.ofSeconds(10)
         );
     }
+    // Логотип Stellar Burgers
+    private final By logo = By.xpath(
+            "//header//nav//div/a[contains(@href, '/')]/svg"
+    );
+
+    // Кнопка «Конструктор»
+    private final By constructorButton = By.xpath(
+            "//header//nav//ul/li[1]/a"
+    );
 
     @Step("Нажать кнопку «Войти в аккаунт» на главной странице")
     public void clickLoginButton() {
@@ -43,6 +52,14 @@ public class MainPage {
 
     @Step("Нажать кнопку «Личный Кабинет»")
     public void clickPersonalAccount() {
+        By modalOverlay = By.cssSelector(
+                "[class*='Modal_modal_overlay']"
+        );
+
+        wait.until(
+                ExpectedConditions.invisibilityOfElementLocated(modalOverlay)
+        );
+
         wait.until(
                 ExpectedConditions.elementToBeClickable(personalAccountButton)
         ).click();
@@ -52,6 +69,20 @@ public class MainPage {
     public void clickRegistrationLink() {
         wait.until(
                 ExpectedConditions.elementToBeClickable(registrationLink)
+        ).click();
+    }
+
+    @Step("Нажать на логотип Stellar Burgers")
+    public void clickLogo() {
+        wait.until(
+                ExpectedConditions.elementToBeClickable(logo)
+        ).click();
+    }
+
+    @Step("Нажать кнопку «Конструктор»")
+    public void clickConstructorButton() {
+        wait.until(
+                ExpectedConditions.elementToBeClickable(constructorButton)
         ).click();
     }
 }

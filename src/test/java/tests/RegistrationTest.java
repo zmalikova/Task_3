@@ -27,6 +27,7 @@ public class RegistrationTest {
     }
 
     @Test
+    @io.qameta.allure.Description("Успешная регистрация нового пользователя")
     public void shouldRegisterNewUser() {
         String email = "user" + UUID.randomUUID()
                 .toString().replace("-", "").substring(0, 10)

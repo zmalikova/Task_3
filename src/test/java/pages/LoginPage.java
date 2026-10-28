@@ -26,6 +26,39 @@ public class LoginPage {
         );
     }
 
+    private final By emailInput = By.xpath(
+            "//label[contains(., 'Email')]/following-sibling::input"
+    );
+
+    private final By passwordInput = By.xpath(
+            "//input[@type='password']"
+    );
+
+    private final By loginButton = By.xpath(
+            "//button[contains(normalize-space(.), 'Войти')]"
+    );
+
+    @Step("Ввести электронную почту")
+    public void enterEmail(String email) {
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(emailInput)
+        ).sendKeys(email);
+    }
+
+    @Step("Ввести пароль")
+    public void enterPassword(String password) {
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(passwordInput)
+        ).sendKeys(password);
+    }
+
+    @Step("Нажать кнопку «Войти»")
+    public void clickLoginButton() {
+        wait.until(
+                ExpectedConditions.elementToBeClickable(loginButton)
+        ).click();
+    }
+
     @Step("Нажать ссылку «Восстановить пароль»")
     public void clickForgotPasswordLink() {
         wait.until(
@@ -44,4 +77,16 @@ public class LoginPage {
         ).click();
     }
 
+    @Step("Авторизоваться под пользователем")
+    public void login(String email, String password) {
+        enterEmail(email);
+        enterPassword(password);
+        clickLoginButton();
+
+        wait.until(
+                ExpectedConditions.not(
+                        ExpectedConditions.urlContains("/login")
+                )
+        );
+    }
 }

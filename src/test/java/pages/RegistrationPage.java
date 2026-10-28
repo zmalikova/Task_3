@@ -78,6 +78,9 @@ public class RegistrationPage {
                         ExpectedConditions.urlContains("/login"),
                         ExpectedConditions.visibilityOfElementLocated(
                                 By.xpath("//*[contains(@class, 'input__error')]")
+                        ),
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.xpath("//button[contains(normalize-space(.), 'Войти')]")
                         )
                 )
         );
