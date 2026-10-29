@@ -28,16 +28,8 @@ public class ConstructorPage {
             "//div[contains(@class, 'tab')][.//*[normalize-space()='Начинки']]"
     );
 
-    private final By bunsHeading = By.xpath(
-            "//main//h2[normalize-space()='Булки']"
-    );
-
-    private final By saucesHeading = By.xpath(
-            "//main//h2[normalize-space()='Соусы']"
-    );
-
-    private final By fillingsHeading = By.xpath(
-            "//main//h2[normalize-space()='Начинки']"
+    private final By activeTab = By.cssSelector(
+            "div[class*='tab_tab_type_current']"
     );
 
     public ConstructorPage(WebDriver driver) {
@@ -47,59 +39,53 @@ public class ConstructorPage {
         );
     }
 
-    private void clickTab(By locator) {
+    private void selectTab(By tabLocator, String tabName) {
         WebElement element = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(locator)
+                ExpectedConditions.visibilityOfElementLocated(tabLocator)
         );
 
         ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].click();", element
+                "arguments[0].scrollIntoView({block: 'center'});",
+                element
+        );
+
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(tabLocator)
+        );
+
+        element = driver.findElement(tabLocator);
+
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].click();",
+                element
+        );
+
+        wait.until(
+                ExpectedConditions.textToBePresentInElementLocated(
+                        activeTab, tabName
+                )
         );
     }
 
     @Step("Выбрать раздел «Булки»")
     public void clickBunsTab() {
-        clickTab(bunsTab);
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(bunsHeading)
-        );
+        selectTab(bunsTab, "Булки");
     }
 
     @Step("Выбрать раздел «Соусы»")
     public void clickSaucesTab() {
-        clickTab(saucesTab);
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(saucesHeading)
-        );
+        selectTab(saucesTab, "Соусы");
     }
 
     @Step("Выбрать раздел «Начинки»")
     public void clickFillingsTab() {
-        clickTab(fillingsTab);
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(fillingsHeading)
-        );
+        selectTab(fillingsTab, "Начинки");
     }
-
 
     @Step("Получить название активного раздела конструктора")
     public String getActiveTabText() {
-        By activeTab = By.cssSelector(
-                "div[class*='tab_tab_type_current']"
-        );
-
         return wait.until(
                 ExpectedConditions.visibilityOfElementLocated(activeTab)
         ).getText().trim();
-    }
-
-
-    private boolean isHeadingVisible(By locator) {
-        for (WebElement element : driver.findElements(locator)) {
-            if (element.isDisplayed()) {
-                return true;
-            }
-        }
-        return false;
     }
 }

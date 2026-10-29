@@ -14,29 +14,30 @@ public class RegistrationPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    // Поле имени
     private final By nameInput = By.xpath(
             "//label[contains(., 'Имя')]/following-sibling::input"
     );
 
-    // Поле электронной почты
     private final By emailInput = By.xpath(
             "//label[contains(., 'Email')]/following-sibling::input"
     );
 
-    // Поле пароля
     private final By passwordInput = By.xpath(
             "//input[@type='password']"
     );
 
-    // Кнопка регистрации
     private final By registerButton = By.xpath(
             "//button[contains(., 'Зарегистрироваться')]"
     );
 
-    // Ссылка «Войти»
     private final By loginLink = By.xpath(
             "//a[contains(normalize-space(.), 'Войти')]"
+    );
+
+    private final By passwordError = By.xpath(
+            "//*[contains(@class, 'input__error') "
+                    + "or contains(@class, 'error') "
+                    + "or contains(@class, 'Error')]"
     );
 
     public RegistrationPage(WebDriver driver) {
@@ -72,18 +73,13 @@ public class RegistrationPage {
         wait.until(
                 ExpectedConditions.elementToBeClickable(registerButton)
         ).click();
+    }
 
-        wait.until(
-                ExpectedConditions.or(
-                        ExpectedConditions.urlContains("/login"),
-                        ExpectedConditions.visibilityOfElementLocated(
-                                By.xpath("//*[contains(@class, 'input__error')]")
-                        ),
-                        ExpectedConditions.visibilityOfElementLocated(
-                                By.xpath("//button[contains(normalize-space(.), 'Войти')]")
-                        )
-                )
-        );
+    @Step("Получить текст ошибки регистрации")
+    public String getErrorMessage() {
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(passwordError)
+        ).getText().trim();
     }
 
     @Step("Перейти ко входу из формы регистрации")
@@ -91,18 +87,5 @@ public class RegistrationPage {
         wait.until(
                 ExpectedConditions.elementToBeClickable(loginLink)
         ).click();
-    }
-
-    @Step("Получить текст ошибки регистрации")
-    public String getErrorMessage() {
-        By errorMessage = By.xpath(
-                "//*[contains(@class, 'input__error') or "
-                        + "contains(@class, 'error') or "
-                        + "contains(@class, 'Error')]"
-        );
-
-        return wait.until(
-                ExpectedConditions.visibilityOfElementLocated(errorMessage)
-        ).getText();
     }
 }

@@ -28,14 +28,6 @@ public class LoginTest {
     private String email;
     private String password;
 
-//    @BeforeEach
-//    public void setUp() {
-//        WebDriverManager.chromedriver().setup();
-//        driver = new ChromeDriver();
-//        driver.manage().window().maximize();
-//        driver.get("https://qa-stellarburgers.education-services.ru/");
-//    }
-
     @BeforeEach
     public void setUp() {
         WebDriverManager.chromedriver().setup();
@@ -87,20 +79,6 @@ public class LoginTest {
                 );
     }
 
-//    @Test
-//    public void shouldReturnToLoginFromPasswordRecovery() {
-//        MainPage mainPage = new MainPage(driver);
-//        mainPage.clickLoginButton();
-//
-//        LoginPage loginPage = new LoginPage(driver);
-//        loginPage.clickForgotPasswordLink();
-//        loginPage.clickLoginLink();
-//
-//        assertTrue(
-//                driver.getCurrentUrl().contains("/login"),
-//                "После нажатия «Войти» должна открыться страница входа"
-//                );
-//    }
 
     @Test
     public void shouldReturnToLoginFromPasswordRecovery() {
@@ -135,6 +113,46 @@ public class LoginTest {
     }
 
     @Test
+    public void shouldLoginWithValidCredentials() {
+        email = "user" + java.util.UUID.randomUUID()
+                .toString().replace("-", "").substring(0, 10)
+                + "@example.com";
+        password = "Burger2026";
+
+        String name = "Little Alien";
+        UserApi userApi = new UserApi();
+
+        // Создаём тестового пользователя через API
+        Response createResponse =
+                userApi.createUser(email, password, name);
+
+        assertTrue(
+                createResponse.statusCode() == 200,
+                "Тестовый пользователь должен создаться через API"
+        );
+
+        // Переходим ко входу и авторизуемся
+        MainPage mainPage = new MainPage(driver);
+        mainPage.clickLoginButton();
+
+        LoginPage loginPage = new LoginPage(driver);
+        loginPage.login(email, password);
+
+        // Проверяем успешный вход
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.urlToBe(
+                        "https://qa-stellarburgers.education-services.ru/"
+                ));
+
+        assertTrue(
+                driver.getCurrentUrl().equals(
+                        "https://qa-stellarburgers.education-services.ru/"
+                ),
+                "После входа должна открыться главная страница"
+        );
+    }
+
+    @Test
     public void shouldLogoutFromPersonalAccount() {
         email = "user" + java.util.UUID.randomUUID()
                 .toString().replace("-", "").substring(0, 10)
@@ -143,17 +161,14 @@ public class LoginTest {
         password = "Burger2026";
         String name = "Little Alien";
 
-        // Регистрируем пользователя через UI
         helpers.UserHelper userHelper = new helpers.UserHelper(driver);
         userHelper.registerUser(name, email, password);
 
-        // Входим в аккаунт
         LoginPage loginPage = new LoginPage(driver);
         loginPage.enterEmail(email);
         loginPage.enterPassword(password);
         loginPage.clickLoginButton();
 
-        // Ждём перехода после успешного входа
         new org.openqa.selenium.support.ui.WebDriverWait(
                 driver, java.time.Duration.ofSeconds(10)
         ).until(
@@ -162,11 +177,9 @@ public class LoginTest {
                 )
         );
 
-        // Открываем личный кабинет
         MainPage mainPage = new MainPage(driver);
         mainPage.clickPersonalAccount();
 
-        // Выходим из аккаунта
         pages.AccountPage accountPage = new pages.AccountPage(driver);
         accountPage.clickLogoutButton();
 

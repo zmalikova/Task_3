@@ -34,7 +34,7 @@ public class MainPage {
 
     // Логотип Stellar Burgers
     private final By logo = By.xpath(
-            "//header//nav//div/a[contains(@href, '/')]/svg"
+            "//header//a[.//*[name()='svg']]"
     );
 
     // Кнопка «Конструктор»
@@ -97,8 +97,6 @@ public class MainPage {
 
     @Step("Нажать на логотип Stellar Burgers")
     public void clickLogo() {
-        waitForModalToDisappear();
-
         wait.until(
                 ExpectedConditions.elementToBeClickable(logo)
         ).click();

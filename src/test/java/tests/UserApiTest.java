@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserApiTest {
 
+
     @Test
     public void shouldCreateAndDeleteUser() {
         UserApi userApi = new UserApi();
@@ -23,33 +24,42 @@ public class UserApiTest {
         String password = "Burger2026";
         String name = "Little Alien";
 
-        Response createResponse = userApi.createUser(
-                email, password, name
-        );
+        String accessToken = null;
 
-        assertEquals(
-                200,
-                createResponse.statusCode(),
-                "Пользователь должен создаться"
-        );
+        try {
+            Response createResponse = userApi.createUser(
+                    email, password, name
+            );
 
-        assertTrue(
-                createResponse.jsonPath()
-                        .getString("accessToken") != null,
-                "В ответе должен быть accessToken"
-        );
+            assertEquals(
+                    200,
+                    createResponse.statusCode(),
+                    "Пользователь должен создаться"
+            );
 
-        String accessToken = createResponse.jsonPath()
-                .getString("accessToken");
+            accessToken = createResponse.jsonPath()
+                    .getString("accessToken");
 
-        assertNotNull("Токен не должен быть null", accessToken);
+            assertNotNull(
+                    accessToken,
+                    "В ответе должен быть accessToken"
+            );
 
-        Response deleteResponse = userApi.deleteUser(accessToken);
+            assertTrue(
+                    !accessToken.isEmpty(),
+                    "Токен не должен быть пустым"
+            );
+        } finally {
+            if (accessToken != null && !accessToken.isEmpty()) {
+                Response deleteResponse = userApi.deleteUser(accessToken);
 
-        assertEquals(
-                202,
-                deleteResponse.statusCode(),
-                "Пользователь должен удалиться"
-        );
+                assertEquals(
+                        202,
+                        deleteResponse.statusCode(),
+                        "Пользователь должен удалиться"
+                );
+            }
+        }
     }
+
 }
