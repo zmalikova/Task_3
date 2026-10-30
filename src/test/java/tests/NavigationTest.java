@@ -2,130 +2,125 @@
 package tests;
 
 import api.UserApi;
-import helpers.UserHelper;
-import io.restassured.response.Response;
+import config.Urls;
+import io.qameta.allure.Description;
 import io.qameta.allure.Step;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import pages.MainPage;
 import pages.LoginPage;
-import factory.DriverFactory;
+import pages.MainPage;
+import pages.AccountPage;
 
 import java.time.Duration;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NavigationTest {
+public class NavigationTest extends BaseTest {
 
-    private WebDriver driver;
-    private String email;
-    private String password;
-    private final String baseUrl =
-            "https://qa-stellarburgers.education-services.ru/";
-
-    @BeforeEach
-    public void setUp() {
-        String browser = System.getProperty("browser", "chrome");
-
-        driver = DriverFactory.createDriver(browser);
-        driver.manage().window().maximize();
-        driver.get(baseUrl);
+    private WebDriverWait getWait() {
+        return new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     @Test
+    @Description("Проверка перехода на страницу входа через личный кабинет")
     public void shouldOpenLoginFromPersonalAccountWhenLoggedOut() {
         MainPage mainPage = new MainPage(driver);
         mainPage.clickPersonalAccount();
 
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
+        );
+
         assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "Неавторизованный пользователь должен попасть на страницу входа"
+                new LoginPage(driver).isLoginPageDisplayed(),
+                "Должна отображаться форма входа"
         );
     }
 
     @Test
+    @Description("Проверка перехода в конструктор по кнопке «Конструктор»")
     public void shouldNavigateToConstructorByConstructorButton() {
         loginAndOpenAccount();
 
         MainPage mainPage = new MainPage(driver);
         mainPage.clickConstructorButton();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlToBe(baseUrl));
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.BASE_URL)
+        );
 
         assertTrue(
-                driver.getCurrentUrl().equals(baseUrl),
-                "После нажатия «Конструктор» должна открыться главная страница"
+                mainPage.isLogoDisplayed(),
+                "Должен отображаться логотип"
         );
     }
 
     @Test
+    @Description("Проверка перехода в конструктор по логотипу")
     public void shouldNavigateToConstructorByLogo() {
         loginAndOpenAccount();
 
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLogo();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlToBe(baseUrl));
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.BASE_URL)
+        );
 
         assertTrue(
-                driver.getCurrentUrl().equals(baseUrl),
-                "После нажатия на логотип должна открыться главная страница"
+                mainPage.isLogoDisplayed(),
+                "Должен отображаться логотип"
         );
     }
 
-    @Step("Создать пользователя, войти в аккаунт и открыть личный кабинет")
+    @Step("Создать пользователя через API, войти и открыть личный кабинет")
     private void loginAndOpenAccount() {
         email = "user" + UUID.randomUUID()
                 .toString().replace("-", "")
                 .substring(0, 12) + "@example.com";
-        password = "Burger2026";
-        String name = "Little Alien";
 
-        UserHelper userHelper = new UserHelper(driver);
-        userHelper.registerUser(name, email, password);
+        password = "Burger2026";
+
+        UserApi userApi = new UserApi();
+
+        Response response = userApi.createUser(
+                email, password, "Little Alien"
+        );
+
+        assertEquals(
+                200,
+                response.statusCode(),
+                "Пользователь должен создаться через API"
+        );
+
+        MainPage mainPage = new MainPage(driver);
+        mainPage.clickLoginButton();
 
         LoginPage loginPage = new LoginPage(driver);
         loginPage.login(email, password);
 
-        MainPage mainPage = new MainPage(driver);
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.BASE_URL)
+        );
+
+        assertTrue(
+                mainPage.isLogoDisplayed(),
+                "После авторизации должен отображаться логотип"
+        );
+
         mainPage.clickPersonalAccount();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("/account"));
-    }
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.ACCOUNT_URL)
+        );
 
-    @AfterEach
-    public void tearDown() {
-        try {
-            if (email != null && password != null) {
-                UserApi userApi = new UserApi();
-                Response response = userApi.loginUser(email, password);
-
-                if (response.statusCode() == 200) {
-                    String token = response.jsonPath()
-                            .getString("accessToken");
-
-                    if (token != null && !token.isEmpty()) {
-                        userApi.deleteUser(token);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println(
-                    "Не удалось удалить тестового пользователя: "
-                            + e.getMessage()
-            );
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
-        }
+        assertTrue(
+                new AccountPage(driver).isLogoutButtonDisplayed(),
+                "В личном кабинете должна отображаться кнопка «Выйти»"
+        );
     }
 }

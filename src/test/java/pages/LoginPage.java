@@ -27,7 +27,7 @@ public class LoginPage {
     }
 
     private final By emailInput = By.xpath(
-            "//label[contains(., 'Email')]/following-sibling::input"
+            "//fieldset[1]//input"
     );
 
     private final By passwordInput = By.xpath(
@@ -69,7 +69,7 @@ public class LoginPage {
     @Step("Вернуться ко входу из формы восстановления пароля")
     public void clickLoginLink() {
         By loginLink = By.xpath(
-                "//a[contains(normalize-space(.), 'Войти')]"
+                "//a[text()='Войти']"
         );
 
         wait.until(
@@ -88,5 +88,12 @@ public class LoginPage {
                         ExpectedConditions.urlContains("/login")
                 )
         );
+    }
+
+    @Step("Проверить отображение страницы входа")
+    public boolean isLoginPageDisplayed() {
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(emailInput)
+        ).isDisplayed();
     }
 }

@@ -38,8 +38,9 @@ public class MainPage {
     );
 
     // Кнопка «Конструктор»
-    private final By constructorButton =
-            By.xpath("//header//nav//ul/li[1]/a");
+    private final By constructorButton = By.xpath(
+            "//header//p[text()='Конструктор']"
+    );
 
     public MainPage(WebDriver driver) {
         this.driver = driver;
@@ -57,19 +58,8 @@ public class MainPage {
         );
     }
 
-//    @Step("Нажать кнопку «Войти в аккаунт» на главной странице")
-//    public void clickLoginButton() {
-//        waitForModalToDisappear();
-//
-//        wait.until(
-//                ExpectedConditions.elementToBeClickable(loginButton)
-//        ).click();
-//    }
-
     @Step("Нажать кнопку «Войти в аккаунт» на главной странице")
     public void clickLoginButton() {
-        wait.until(ExpectedConditions.presenceOfElementLocated(loginButton));
-
         wait.until(ExpectedConditions.elementToBeClickable(loginButton))
                 .click();
     }
@@ -111,5 +101,12 @@ public class MainPage {
                         constructorButton
                 )
         ).click();
+    }
+
+    @Step("Проверить отображение логотипа на главной странице")
+    public boolean isLogoDisplayed() {
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(logo)
+        ).isDisplayed();
     }
 }

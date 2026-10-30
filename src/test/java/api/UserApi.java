@@ -1,5 +1,7 @@
+
 package api;
 
+import config.Urls;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
@@ -7,42 +9,36 @@ import static io.restassured.RestAssured.given;
 
 public class UserApi {
 
-    private static final String BASE_URL =
-            "https://qa-stellarburgers.education-services.ru/";
-
     @Step("Создать пользователя через API")
     public Response createUser(String email, String password, String name) {
+        UserRequest user = new UserRequest(email, password, name);
+
         return given()
-                .baseUri(BASE_URL)
+                .baseUri(Urls.BASE_URL)
                 .contentType("application/json")
-                .body("{"
-                        + "\"email\":\"" + email + "\","
-                        + "\"password\":\"" + password + "\","
-                        + "\"name\":\"" + name + "\""
-                        + "}")
+                .body(user)
                 .when()
-                .post("/api/auth/register");
+                .post(Urls.API_REGISTER);
     }
 
     @Step("Авторизоваться через API")
     public Response loginUser(String email, String password) {
+        LoginRequest user = new LoginRequest(email, password);
+
         return given()
-                .baseUri(BASE_URL)
+                .baseUri(Urls.BASE_URL)
                 .contentType("application/json")
-                .body("{"
-                        + "\"email\":\"" + email + "\","
-                        + "\"password\":\"" + password + "\""
-                        + "}")
+                .body(user)
                 .when()
-                .post("/api/auth/login");
+                .post(Urls.API_LOGIN);
     }
 
     @Step("Удалить пользователя через API")
     public Response deleteUser(String accessToken) {
         return given()
-                .baseUri(BASE_URL)
+                .baseUri(Urls.BASE_URL)
                 .header("Authorization", accessToken)
                 .when()
-                .delete("/api/auth/user");
+                .delete(Urls.API_USER);
     }
 }

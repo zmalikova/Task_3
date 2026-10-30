@@ -1,72 +1,59 @@
 
 package tests;
 
-import api.UserApi;
-import io.github.bonigarcia.wdm.WebDriverManager;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import config.Urls;
+import io.qameta.allure.Description;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import pages.LoginPage;
 import pages.MainPage;
 import pages.RegistrationPage;
 
 import java.time.Duration;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RegistrationTest {
+public class RegistrationTest extends BaseTest {
 
-    private WebDriver driver;
-    private String email;
-    private String password;
-
-    @BeforeEach
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.get(
-                "https://qa-stellarburgers.education-services.ru/"
-        );
+    private WebDriverWait getWait() {
+        return new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     @Test
+    @Description("Проверка успешной регистрации нового пользователя")
     public void shouldRegisterNewUser() {
         email = "user" + UUID.randomUUID()
                 .toString().replace("-", "").substring(0, 10)
                 + "@example.com";
+
         password = "Burger2026";
 
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
         mainPage.clickRegistrationLink();
 
-        RegistrationPage registrationPage =
-                new RegistrationPage(driver);
+        RegistrationPage registrationPage = new RegistrationPage(driver);
 
         registrationPage.enterName("Little Alien");
         registrationPage.enterEmail(email);
         registrationPage.enterPassword(password);
         registrationPage.clickRegisterButton();
 
-        new WebDriverWait(
-                driver, Duration.ofSeconds(10)
-        ).until(
-                ExpectedConditions.urlContains("/login")
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
         );
 
         assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "После успешной регистрации должна открыться страница входа"
+                new LoginPage(driver).isLoginPageDisplayed(),
+                "После регистрации должна отображаться форма входа"
         );
     }
 
     @Test
+    @Description("Проверка ошибки при регистрации с паролем короче шести символов")
     public void shouldShowErrorForShortPassword() {
         String invalidEmail = "user" + UUID.randomUUID()
                 .toString().replace("-", "").substring(0, 10)
@@ -76,47 +63,17 @@ public class RegistrationTest {
         mainPage.clickLoginButton();
         mainPage.clickRegistrationLink();
 
-        RegistrationPage registrationPage =
-                new RegistrationPage(driver);
+        RegistrationPage registrationPage = new RegistrationPage(driver);
 
         registrationPage.enterName("Little Alien");
         registrationPage.enterEmail(invalidEmail);
         registrationPage.enterPassword("12345");
         registrationPage.clickRegisterButton();
 
-        assertTrue(
-                registrationPage.getErrorMessage().length() > 0,
-                "Должна отображаться ошибка для пароля короче 6 символов"
+        assertEquals(
+                "Некорректный пароль",
+                registrationPage.getErrorMessage(),
+                "Должна отображаться ошибка некорректного пароля"
         );
-    }
-
-    @AfterEach
-    public void tearDown() {
-        try {
-            if (email != null && password != null) {
-                UserApi userApi = new UserApi();
-                Response loginResponse =
-                        userApi.loginUser(email, password);
-
-                if (loginResponse.statusCode() == 200) {
-                    String accessToken = loginResponse.jsonPath()
-                            .getString("accessToken");
-
-                    if (accessToken != null
-                            && !accessToken.isEmpty()) {
-                        userApi.deleteUser(accessToken);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println(
-                    "Не удалось удалить тестового пользователя: "
-                            + e.getMessage()
-            );
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
-        }
     }
 }

@@ -1,70 +1,64 @@
-
 package tests;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import api.UserApi;
+import io.qameta.allure.Description;
+import io.qameta.allure.Step;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import pages.AccountPage;
+import pages.LoginPage;
 import pages.MainPage;
 import pages.RegistrationPage;
-import pages.LoginPage;
-import api.UserApi;
-import io.restassured.response.Response;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.PageLoadStrategy;
+import config.Urls;
 
 import java.time.Duration;
+import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LoginTest {
+public class LoginTest extends BaseTest {
 
-    private WebDriver driver;
-    private String email;
-    private String password;
-
-    @BeforeEach
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.manage().timeouts()
-                .pageLoadTimeout(Duration.ofSeconds(30));
-        driver.get("https://qa-stellarburgers.education-services.ru/");
+    private WebDriverWait getWait() {
+        return new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     @Test
+    @Description("Проверка перехода на страницу входа по кнопке «Войти в аккаунт»")
     public void shouldOpenLoginPageFromMainButton() {
         MainPage mainPage = new MainPage(driver);
-
         mainPage.clickLoginButton();
 
-        assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "После нажатия должна открыться страница входа"
-                );
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
+        );
+
+        LoginPage loginPage = new LoginPage(driver);
+
+        assertTrue(loginPage.isLoginPageDisplayed(),
+                "Должно отображаться поле Email");
     }
 
     @Test
+    @Description("Проверка перехода на страницу входа через личный кабинет")
     public void shouldOpenLoginPageFromPersonalAccount() {
         MainPage mainPage = new MainPage(driver);
-
         mainPage.clickPersonalAccount();
 
-        assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "Должна открыться страница входа"
-                );
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
+        );
+
+        LoginPage loginPage = new LoginPage(driver);
+
+        assertTrue(loginPage.isLoginPageDisplayed(),
+                "Должно отображаться поле Email");
     }
 
-
     @Test
+    @Description("Проверка перехода на страницу входа из формы регистрации")
     public void shouldOpenLoginPageFromRegistrationForm() {
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
@@ -73,169 +67,108 @@ public class LoginTest {
         RegistrationPage registrationPage = new RegistrationPage(driver);
         registrationPage.clickLoginLink();
 
-        assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "После нажатия «Войти» должна открыться страница входа"
-                );
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
+        );
+
+        LoginPage loginPage = new LoginPage(driver);
+
+        assertTrue(loginPage.isLoginPageDisplayed(),
+                "Должно отображаться поле Email");
     }
 
-
     @Test
+    @Description("Проверка возврата на страницу входа со страницы восстановления пароля")
     public void shouldReturnToLoginFromPasswordRecovery() {
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
 
-        WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(15)
-        );
-
-        wait.until(
-                ExpectedConditions.urlContains("/login")
-        );
-
         LoginPage loginPage = new LoginPage(driver);
         loginPage.clickForgotPasswordLink();
 
-        wait.until(
-                ExpectedConditions.urlContains("/forgot-password")
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.FORGOT_PASSWORD_URL)
         );
 
         loginPage.clickLoginLink();
 
-        wait.until(
-                ExpectedConditions.urlContains("/login")
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
         );
 
-        assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "После нажатия «Войти» должна открыться страница входа"
-        );
+        assertTrue(loginPage.isLoginPageDisplayed(),
+                "Должно отображаться поле Email");
     }
 
     @Test
+    @Description("Проверка успешной авторизации зарегистрированного пользователя")
     public void shouldLoginWithValidCredentials() {
-        email = "user" + java.util.UUID.randomUUID()
-                .toString().replace("-", "").substring(0, 10)
-                + "@example.com";
-        password = "Burger2026";
+        createTestUser();
 
-        String name = "Little Alien";
         UserApi userApi = new UserApi();
+        Response response = userApi.createUser(email, password, "Little Alien");
 
-        // Создаём тестового пользователя через API
-        Response createResponse =
-                userApi.createUser(email, password, name);
+        assertEquals(200, response.statusCode(),
+                "Пользователь должен создаться через API");
 
-        assertTrue(
-                createResponse.statusCode() == 200,
-                "Тестовый пользователь должен создаться через API"
-        );
-
-        // Переходим ко входу и авторизуемся
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
 
         LoginPage loginPage = new LoginPage(driver);
         loginPage.login(email, password);
 
-        // Проверяем успешный вход
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlToBe(
-                        "https://qa-stellarburgers.education-services.ru/"
-                ));
-
-        assertTrue(
-                driver.getCurrentUrl().equals(
-                        "https://qa-stellarburgers.education-services.ru/"
-                ),
-                "После входа должна открыться главная страница"
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.BASE_URL)
         );
+
+        assertTrue(mainPage.isLogoDisplayed(),
+                "После авторизации должен отображаться логотип");
     }
 
     @Test
+    @Description("Проверка выхода авторизованного пользователя из личного кабинета")
     public void shouldLogoutFromPersonalAccount() {
-        email = "user" + java.util.UUID.randomUUID()
-                .toString().replace("-", "").substring(0, 10)
-                + "@example.com";
+        createTestUser();
 
-        password = "Burger2026";
-        String name = "Little Alien";
+        UserApi userApi = new UserApi();
+        Response response = userApi.createUser(email, password, "Little Alien");
 
-        helpers.UserHelper userHelper = new helpers.UserHelper(driver);
-        userHelper.registerUser(name, email, password);
-
-        LoginPage loginPage = new LoginPage(driver);
-        loginPage.enterEmail(email);
-        loginPage.enterPassword(password);
-        loginPage.clickLoginButton();
-
-        new org.openqa.selenium.support.ui.WebDriverWait(
-                driver, java.time.Duration.ofSeconds(10)
-        ).until(
-                org.openqa.selenium.support.ui.ExpectedConditions.urlToBe(
-                        "https://qa-stellarburgers.education-services.ru/"
-                )
-        );
+        assertEquals(200, response.statusCode(),
+                "Пользователь должен создаться через API");
 
         MainPage mainPage = new MainPage(driver);
-        mainPage.clickPersonalAccount();
+        mainPage.clickLoginButton();
 
-        pages.AccountPage accountPage = new pages.AccountPage(driver);
-        accountPage.clickLogoutButton();
+        LoginPage loginPage = new LoginPage(driver);
+        loginPage.login(email, password);
 
-        new org.openqa.selenium.support.ui.WebDriverWait(
-                driver, java.time.Duration.ofSeconds(10)
-        ).until(
-                org.openqa.selenium.support.ui.ExpectedConditions.or(
-                        org.openqa.selenium.support.ui.ExpectedConditions.urlContains("/login"),
-                        org.openqa.selenium.support.ui.ExpectedConditions.urlToBe(
-                                "https://qa-stellarburgers.education-services.ru/"
-                        )
-                )
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.BASE_URL)
         );
 
-        assertTrue(
-                driver.getCurrentUrl().contains("/login"),
-                "После выхода должна открыться страница входа"
-                );
+        assertTrue(mainPage.isLogoDisplayed(),
+                "После авторизации должен отображаться логотип");
+
+        mainPage.clickPersonalAccount();
+
+        AccountPage accountPage = new AccountPage(driver);
+        accountPage.clickLogoutButton();
+
+        getWait().until(
+                ExpectedConditions.urlToBe(Urls.LOGIN_URL)
+        );
+
+        assertTrue(new LoginPage(driver).isLoginPageDisplayed(),
+                "После выхода должно отображаться поле Email");
     }
 
+    @Step("Подготовить данные тестового пользователя")
+    private void createTestUser() {
+        email = "user" + UUID.randomUUID()
+                .toString().replace("-", "")
+                .substring(0, 10) + "@example.com";
 
-    @AfterEach
-    public void tearDown() {
-        try {
-            if (email != null && password != null) {
-                try {
-                    UserApi userApi = new UserApi();
-
-                    Response loginResponse = userApi.loginUser(email, password);
-
-                    if (loginResponse.statusCode() == 200) {
-                        String accessToken = loginResponse.jsonPath()
-                                .getString("accessToken");
-
-                        if (accessToken != null && !accessToken.isEmpty()) {
-                            Response deleteResponse =
-                                    userApi.deleteUser(accessToken);
-
-                            System.out.println(
-                                    "Результат удаления пользователя: "
-                                            + deleteResponse.statusCode()
-                            );
-                        }
-                    }
-                } catch (Exception e) {
-                    System.out.println(
-                            "Не удалось удалить тестового пользователя через API: "
-                                    + e.getMessage()
-                    );
-                }
-            }
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
-        }
+        password = "Burger2026";
     }
 
 }

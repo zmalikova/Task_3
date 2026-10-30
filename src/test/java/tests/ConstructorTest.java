@@ -1,68 +1,52 @@
 
 package tests;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import pages.ConstructorPage;
+import io.qameta.allure.Description;
 
+public class ConstructorTest extends BaseTest {
 
-public class ConstructorTest {
-
-    private WebDriver driver;
     private ConstructorPage constructorPage;
 
     @BeforeEach
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.get(
-                "https://qa-stellarburgers.education-services.ru/"
-        );
-
+    public void setUpConstructorPage() {
         constructorPage = new ConstructorPage(driver);
     }
 
     @Test
+    @Description("Проверка переключения на раздел «Булки»")
     public void shouldOpenBunsSection() {
         constructorPage.clickBunsTab();
 
         assertTrue(
                 constructorPage.getActiveTabText().contains("Булки"),
                 "Должен быть выбран раздел «Булки»"
-                );
+        );
     }
 
     @Test
+    @Description("Проверка переключения на раздел «Соусы»")
     public void shouldOpenSaucesSection() {
         constructorPage.clickSaucesTab();
 
         assertTrue(
                 constructorPage.getActiveTabText().contains("Соусы"),
                 "Должен быть выбран раздел «Соусы»"
-                );
+        );
     }
 
     @Test
+    @Description("Проверка переключения на раздел «Начинки»")
     public void shouldOpenFillingsSection() {
         constructorPage.clickFillingsTab();
 
         assertTrue(
                 constructorPage.getActiveTabText().contains("Начинки"),
                 "Должен быть выбран раздел «Начинки»"
-                );
-    }
-
-    @AfterEach
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
+        );
     }
 }

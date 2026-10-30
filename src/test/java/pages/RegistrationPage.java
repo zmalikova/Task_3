@@ -34,11 +34,9 @@ public class RegistrationPage {
             "//a[contains(normalize-space(.), 'Войти')]"
     );
 
-    private final By passwordError = By.xpath(
-            "//*[contains(@class, 'input__error') "
-                    + "or contains(@class, 'error') "
-                    + "or contains(@class, 'Error')]"
-    );
+    private final By passwordError = By.cssSelector(
+            "p.input__error"
+   );
 
     public RegistrationPage(WebDriver driver) {
         this.driver = driver;
